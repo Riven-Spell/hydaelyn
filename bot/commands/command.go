@@ -18,6 +18,7 @@ type Command struct {
 var GlobalCommands = map[string]Command{
 	RoleReactCommand.DgCommand.Name:  RoleReactCommand,
 	CommandChainRoles.DgCommand.Name: CommandChainRoles,
+	CommandSource.DgCommand.Name:     CommandSource,
 }
 
 func RegisterGlobalCommands(s *discordgo.Session, cfg common.ConfigDiscord) error {
