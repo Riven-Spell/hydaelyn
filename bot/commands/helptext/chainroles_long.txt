@@ -1,0 +1,3 @@
+Chainroles is designed to act as a simple way to upgrade existing roles with new combo roles.
+
+Chainroles takes one base role, and can assign up to 24 additional new roles in one execution.

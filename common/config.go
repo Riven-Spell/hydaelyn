@@ -4,14 +4,14 @@ import (
 	"errors"
 	"os"
 	"path"
-	
+
 	"github.com/spf13/viper"
 )
 
 // ========== LCM =========
 
 var LCMServiceConfig = LCMService{
-	Name: "config",
+	Name: LCMServiceNameConfig,
 	Startup: func() error {
 		_, err := ReadConfig()
 		return err
@@ -28,24 +28,37 @@ var ConfigTarget string
 var singleViperCfg *viper.Viper
 var singleCfg *Config
 
-const (
-	mariaDBConnString string = "DBConnectionString"
-	botToken                 = "BotToken"
-	defaultPrefix            = "DefaultPrefix"
-	logDir                   = "LogDir"
-	retainLogDays            = "RetainLogDays"
-	logStdOut                = "LogStdOut"
-	botOwner                 = "BotOwner"
-)
-
 type Config struct {
+	Log     ConfigLog
+	DB      ConfigDB
+	Discord ConfigDiscord
+}
+
+func defaultConfig(homeDir string) Config {
+	return Config{
+		Log: ConfigLog{
+			LogDir:        path.Join(homeDir, ".hydaelyn", "logs"),
+			LogStdOut:     true,
+			RetainLogDays: 7,
+		},
+	}
+}
+
+type ConfigDB struct {
 	DBConnectionString string
-	BotToken           string
-	BotOwner           string
-	DefaultPrefix      string
-	LogStdOut          bool // if false, stdout logger is disabled.
-	LogDir             string
-	RetainLogDays      uint // if 0, file-logger is disabled
+	DBName             string
+}
+
+type ConfigDiscord struct {
+	BotApplicationID string
+	BotToken         string
+	BotOwner         string
+}
+
+type ConfigLog struct {
+	LogStdOut     bool // if false, stdout logger is disabled.
+	LogDir        string
+	RetainLogDays uint // if 0, file-logger is disabled
 }
 
 // todo: reload config?
@@ -54,42 +67,36 @@ func getViperConfig() (*viper.Viper, error) {
 	if singleViperCfg != nil {
 		return singleViperCfg, nil
 	}
-	
+
 	conf := viper.New()
-	
+
 	home, err := os.UserHomeDir()
 	if err != nil {
 		return nil, err
 	}
-	
+
 	_ = os.MkdirAll(path.Join(home, ".hydaelyn"), 0700)
-	
+
 	conf.AddConfigPath(path.Join(home, ".hydaelyn"))
 	conf.SetConfigName("hydaelyn")
 	conf.SetConfigType("yaml")
 	err = conf.ReadInConfig() // try to read the config
-	
+
 	if _, ok := err.(viper.ConfigFileNotFoundError); ok {
 		// Create the config
-		conf.Set(mariaDBConnString, "")
-		conf.Set(botToken, "")
-		conf.Set(defaultPrefix, "!")
-		conf.Set(logDir, path.Join(home, ".hydaelyn", "logs"))
-		conf.Set(retainLogDays, 2)
-		conf.Set(logStdOut, true)
-		conf.Set(botOwner, "@Virepri#2512")
+		conf.Set("config", defaultConfig(home))
 		err = conf.SafeWriteConfig() // try to write the config
 		if err == nil {
 			err = errors.New("configuration required in " + path.Join(home, ".hydaelyn", "hydaelyn.yaml"))
 		}
-		
+
 		return conf, err
 	}
-	
+
 	if err != nil {
 		singleViperCfg = conf
 	}
-	
+
 	return conf, err
 }
 
@@ -97,24 +104,21 @@ func ReadConfig() (*Config, error) {
 	if singleCfg != nil {
 		return singleCfg, nil
 	}
-	
+
 	conf, err := getViperConfig()
-	
+
 	if err != nil {
 		return nil, err
 	}
-	
+
 	out := &Config{}
-	
-	out.DBConnectionString = conf.GetString(mariaDBConnString)
-	out.BotToken = conf.GetString(botToken)
-	out.DefaultPrefix = conf.GetString(defaultPrefix)
-	out.LogDir = conf.GetString(logDir)
-	out.LogStdOut = conf.GetBool(logStdOut)
-	out.RetainLogDays = conf.GetUint(retainLogDays)
-	out.BotOwner = conf.GetString(botOwner)
-	
+
+	err = conf.UnmarshalKey("config", out)
+	if err != nil {
+		return nil, err
+	}
+
 	singleCfg = out
-	
+
 	return out, nil
 }

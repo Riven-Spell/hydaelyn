@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/virepri/hydaelyn/cmd"
+	"github.com/Riven-Spell/hydaelyn/cmd"
 )
 
 func main() {

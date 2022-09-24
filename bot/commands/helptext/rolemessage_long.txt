@@ -1,0 +1,5 @@
+Rolemessage takes pairs of (local server) emotes to roles and produces a message with specified text, using a colon (:) as a separator.
+
+Multiple roles can be assigned with a single reaction using a comma as a delimiter. Role IDs can be obtained using discord developer mode, going into the "roles" menu of a server, and copying the IDs.
+
+e.g. `<:smile>:923058859176787988,848698342648578079`

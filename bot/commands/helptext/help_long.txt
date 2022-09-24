@@ -1,0 +1,1 @@
+Help provides a list of all commands with short descriptions, or, when supplied the name of a command, the long description.
