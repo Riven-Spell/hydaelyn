@@ -41,6 +41,10 @@ func defaultConfig(homeDir string) Config {
 			LogStdOut:     true,
 			RetainLogDays: 7,
 		},
+		DB: ConfigDB{
+			DBConnectionString: "mysql://hydaelyn:password@tcp(127.0.0.1)/",
+			DBName:             "hydaelyn",
+		},
 	}
 }
 
