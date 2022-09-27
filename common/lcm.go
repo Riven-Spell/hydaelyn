@@ -8,11 +8,12 @@ import (
 )
 
 const (
-	LCMServiceNameLog       = "log"
-	LCMServiceNameConfig    = "config"
-	LCMServiceNameBot       = "bot"
-	LCMServiceNameSQL       = "SQL"
-	LCMServiceNameRoleReact = "RoleReact"
+	LCMServiceNameLog           = "log"
+	LCMServiceNameConfig        = "config"
+	LCMServiceNameBot           = "bot"
+	LCMServiceNameSQL           = "SQL"
+	LCMServiceNameRoleReact     = "RoleReact"
+	LCMServiceNameAutoScheduler = "AutoScheduler"
 )
 
 type LCMService struct {
@@ -20,7 +21,7 @@ type LCMService struct {
 	Dependencies []string
 	GetSvc       func() interface{}
 	Shutdown     func() error
-	Startup      func() error
+	Startup      func(deps []interface{}) error
 }
 
 var singleLCM *LifeCycleManager
@@ -159,7 +160,20 @@ func CreateLifeCycleManager(services []LCMService) *LifeCycleManager {
 				continue
 			}
 
-			err := RunHookIfNotNil(v.Startup)
+			var wrappedStartup func() error
+			if v.Startup != nil {
+				wrappedStartup = func() error {
+					deps := make([]interface{}, len(v.Dependencies))
+
+					for k, v := range v.Dependencies {
+						deps[k] = singleLCM.Services[v].GetSvc()
+					}
+
+					return v.Startup(deps)
+				}
+			}
+
+			err := RunHookIfNotNil(wrappedStartup)
 
 			if err != nil {
 				errored[v.Name] = err

@@ -18,7 +18,7 @@ var HelpCommand = Command{
 		Version:      "1.0",
 		Type:         discordgo.ChatApplicationCommand,
 		Name:         "help",
-		DMPermission: common.BoolVar(true),
+		DMPermission: common.Pointer(true),
 		Description:  "List commands & information",
 		Options: []*discordgo.ApplicationCommandOption{
 			{

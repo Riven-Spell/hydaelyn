@@ -79,7 +79,9 @@ func (db *Database) DBSetupCorrectly() error {
 	tx := extTx.tx
 
 	for _, v := range tables {
-		row, err := tx.Query(fmt.Sprintf("SELECT * FROM %s", v))
+		query := fmt.Sprintf("SELECT * FROM %s", v)
+		extTx.logf("running query `%s`", query)
+		row, err := tx.Query(query)
 		if err != nil {
 			return err
 		}
@@ -89,5 +91,6 @@ func (db *Database) DBSetupCorrectly() error {
 		}
 	}
 
+	extTx.logf("finished database validation, committing...")
 	return tx.Commit()
 }

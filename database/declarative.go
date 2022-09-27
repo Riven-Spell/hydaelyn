@@ -2,6 +2,7 @@ package database
 
 import (
 	"database/sql"
+	"github.com/google/uuid"
 )
 
 type OpType uint
@@ -25,10 +26,22 @@ func QueryArgs(args ...interface{}) []interface{} {
 
 // Tx automagically fires off requests and returns the Rows, Row, or Result in Resolvers.
 // if Tx fails, Tx automatically rolls everything back.
-func transact(tx *sql.Tx, ops []TxOP) (err error) {
+func transact(transaction *Transaction, ops []TxOP) (err error) {
+	tx := transaction.tx
+
+	queryID := ""
+	logf := func(format string, args ...any) {
+		args = append([]any{queryID}, args...)
+		transaction.logf("query %s: "+format, args...)
+	}
+
 	// todo: execute query
 	for _, v := range ops {
 		var result interface{}
+
+		queryID = uuid.New().String()
+		logf("Performing query `%s`...", v.Query)
+
 		switch v.Op {
 		case OpTypeManip:
 			result, err = tx.Exec(v.Query, v.Args...)
@@ -40,18 +53,19 @@ func transact(tx *sql.Tx, ops []TxOP) (err error) {
 		}
 
 		if err != nil {
+			logf("QUERY FAILED: %s", queryID, err.Error())
 			return err
 		}
 
 		if v.Resolver != nil {
+			logf("running resolver...")
 			err = v.Resolver(result)
-			return err
+			if err != nil {
+				logf("resolver failed: %s", err.Error())
+				return err
+			}
 		}
 	}
 
 	return nil
-}
-
-func QueryRowResolver(i ...interface{}) func(interface{}) error {
-	return nil // todo
 }

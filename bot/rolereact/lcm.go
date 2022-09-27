@@ -12,11 +12,10 @@ var singleRoleReactService *RoleReactService
 var LCMServiceRoleReact = common.LCMService{
 	Name:         common.LCMServiceNameRoleReact,
 	Dependencies: []string{"bot", "log", "SQL"},
-	Startup: func() error {
-		lcm := common.GetLifeCycleManager()
-		dgSess := lcm.Services[common.LCMServiceNameBot].GetSvc().(*discordgo.Session)
-		log := lcm.Services[common.LCMServiceNameLog].GetSvc().(*log2.Logger)
-		db := lcm.Services[common.LCMServiceNameSQL].GetSvc().(*database.Database)
+	Startup: func(deps []interface{}) error {
+		dgSess := deps[0].(*discordgo.Session)
+		log := deps[1].(*log2.Logger)
+		db := deps[2].(*database.Database)
 
 		singleRoleReactService = &RoleReactService{live: true, dgSess: dgSess, log: log, db: db}
 

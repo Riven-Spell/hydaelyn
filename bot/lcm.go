@@ -18,11 +18,11 @@ func LCMServiceBot() common.LCMService {
 		GetSvc: func() interface{} {
 			return session
 		},
-		Startup: func() error {
+		Startup: func(deps []interface{}) error {
 			lcm := common.GetLifeCycleManager()
-			config := lcm.Services[common.LCMServiceNameConfig].GetSvc().(*common.Config)
-			log := lcm.Services[common.LCMServiceNameLog].GetSvc().(*log2.Logger)
-			db := lcm.Services[common.LCMServiceNameSQL].GetSvc().(*database.Database)
+			db := deps[0].(*database.Database)
+			log := deps[1].(*log2.Logger)
+			config := deps[2].(*common.Config)
 
 			var err error
 			session, err = discordgo.New("Bot " + config.Discord.BotToken)

@@ -34,9 +34,9 @@ var RoleReactCommand = Command{
 	DgCommand: &discordgo.ApplicationCommand{
 		Type:                     discordgo.ChatApplicationCommand,
 		Name:                     "rolereact",
-		DMPermission:             common.BoolVar(false),
+		DMPermission:             common.Pointer(false),
 		Description:              "Creates a role react message for unprivileged users. /setup required.",
-		DefaultMemberPermissions: common.Int64Var(discordgo.PermissionManageRoles),
+		DefaultMemberPermissions: common.Pointer(int64(discordgo.PermissionManageRoles)),
 		Options: func() []*discordgo.ApplicationCommandOption {
 			// Generate a bunch of role react options
 			out := make([]*discordgo.ApplicationCommandOption, 24)

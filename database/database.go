@@ -4,34 +4,38 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"github.com/google/uuid"
+	log2 "log"
 )
 
 type Database struct {
 	sql    *sql.DB
+	log    *log2.Logger
 	dbName string
 }
 
 func (db *Database) GetTransaction() (*Transaction, error) {
+	txID := uuid.New().String()
+
+	db.log.Printf("tx%s: Opening transaction", txID)
 	tx, err := db.sql.BeginTx(context.TODO(), nil)
 	if err != nil {
 		return nil, err
 	}
 
+	db.log.Printf("tx%s: Setting database", txID)
 	_, err = tx.Exec(fmt.Sprintf("USE `%s`;", db.dbName))
 	if err != nil {
 		return nil, err
 	}
 
-	return &Transaction{tx: tx, owner: db}, nil
+	return &Transaction{tx: tx, owner: db, id: txID}, nil
 }
 
 func (db *Database) Tx(ops []TxOP) error {
-	tx, err := db.sql.BeginTx(context.TODO(), nil)
-	if err != nil {
-		return err
-	}
+	tx, err := db.GetTransaction()
 
-	err = transact(tx, ops)
+	err = tx.Do(ops)
 	if err != nil {
 		rbErr := tx.Rollback()
 

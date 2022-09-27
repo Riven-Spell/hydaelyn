@@ -18,14 +18,10 @@ func LCMServiceLogger() LCMService {
 	var shutdownCh chan bool
 
 	return LCMService{
-		Name: LCMServiceNameLog,
-		Startup: func() error {
-			rootCfg, err := ReadConfig()
-			if err != nil {
-				return err
-			}
-
-			cfg := rootCfg.Log
+		Name:         LCMServiceNameLog,
+		Dependencies: []string{LCMServiceNameConfig},
+		Startup: func(deps []interface{}) error {
+			cfg := deps[0].(*Config).Log
 
 			writers := []io.Writer{os.Stdout}
 			if cfg.RetainLogDays > 0 {

@@ -97,8 +97,8 @@ var CommandChainRoles = Command{
 	DgCommand: &discordgo.ApplicationCommand{
 		Name:                     "chainroles",
 		Description:              "Assign multiple roles to members with existing roles",
-		DefaultMemberPermissions: common.Int64Var(discordgo.PermissionManageRoles),
-		DMPermission:             common.BoolVar(false),
+		DefaultMemberPermissions: common.Pointer(int64(discordgo.PermissionManageRoles)),
+		DMPermission:             common.Pointer(false),
 		Options: func() []*discordgo.ApplicationCommandOption {
 			out := make([]*discordgo.ApplicationCommandOption, 24)
 

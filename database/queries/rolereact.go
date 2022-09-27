@@ -1,7 +1,6 @@
 package queries
 
 import (
-	"database/sql"
 	"encoding/json"
 	"github.com/Riven-Spell/hydaelyn/database"
 	"github.com/bwmarrin/discordgo"
@@ -43,17 +42,9 @@ func GetRoleReactQuery(m *discordgo.Message, roles *RoleReacts) []database.TxOP 
 		{
 			Op: database.OpTypeQueryRow,
 			//language=SQL
-			Query: "SELECT roles FROM rolereacts WHERE channelID = ? AND messageID = ?",
-			Args:  database.QueryArgs(m.ChannelID, m.ID),
-			Resolver: func(i interface{}) error {
-				var data string
-				err := i.(*sql.Row).Scan(&data)
-				if err != nil {
-					return err
-				}
-
-				return json.Unmarshal([]byte(data), roles)
-			},
+			Query:    "SELECT roles FROM rolereacts WHERE channelID = ? AND messageID = ?",
+			Args:     database.QueryArgs(m.ChannelID, m.ID),
+			Resolver: database.QueryRowResolver(&database.JsonResolveTarget{Target: roles}),
 		},
 	}
 }

@@ -12,7 +12,7 @@ import (
 
 var LCMServiceConfig = LCMService{
 	Name: LCMServiceNameConfig,
-	Startup: func() error {
+	Startup: func(deps []interface{}) error {
 		_, err := ReadConfig()
 		return err
 	},
