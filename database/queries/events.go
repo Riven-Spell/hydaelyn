@@ -3,26 +3,19 @@ package queries
 import (
 	"github.com/Riven-Spell/hydaelyn/common"
 	"github.com/Riven-Spell/hydaelyn/database"
-	"github.com/bwmarrin/discordgo"
 	"strings"
 	"time"
 )
 
 type AutoEvent struct {
-	Name         string
-	Description  string
 	GuildID      string
 	GuildEventID string // Discord ID
-	Location     string
-	BaseDay      int // Sometimes, we have to schedule at the end of the month. What's the real day we should be working with?
-	EntityType   discordgo.GuildScheduledEventEntityType
-	PrivacyLevel discordgo.GuildScheduledEventPrivacyLevel
+	BaseDay      int    // Sometimes, we have to schedule at the end of the month. What's the real day we should be working with?
 	Frequency    EventFrequency
-	CurrentEvent time.Time
 }
 
 func (e AutoEvent) Ready() bool {
-	return !(e.Name == "" || e.GuildID == "" || e.GuildEventID == "" || e.Location == "" || e.EntityType == 0 || e.Frequency == FrequencyNone || e.CurrentEvent.IsZero())
+	return !(e.GuildID == "" || e.GuildEventID == "" || e.Frequency == FrequencyNone)
 }
 
 func (e AutoEvent) NextEventStart(lastStartTime time.Time) time.Time {

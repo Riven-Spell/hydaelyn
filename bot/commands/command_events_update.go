@@ -56,6 +56,13 @@ func HandleEventUpdate(s *discordgo.Session, i *discordgo.InteractionCreate, lcm
 	}
 	defer tx.Commit()
 
+	event, err := s.GuildScheduledEvent(i.GuildID, eventID, false)
+	if err != nil {
+		log.Printf("%s: failed to find event: %s", i.ID, err.Error())
+		InternalError(s, i, log)
+		return
+	}
+
 	var targetSeries queries.AutoEvent
 	err = tx.Do(queries.FindEvent(i.GuildID, eventID, &targetSeries))
 	if err != nil {
@@ -73,5 +80,5 @@ func HandleEventUpdate(s *discordgo.Session, i *discordgo.InteractionCreate, lcm
 		return
 	}
 
-	TryRespond(s, i, fmt.Sprintf("Updated frequency of series `%s` to %s."+warning, targetSeries.Name, frequency.String()), log)
+	TryRespond(s, i, fmt.Sprintf("Updated frequency of series `%s` to %s."+warning, event.Name, frequency.String()), log)
 }

@@ -17,7 +17,7 @@ func HandleEventCreate(s *discordgo.Session, i *discordgo.InteractionCreate, lcm
 	}
 
 	var ok bool
-	var warning string
+	var warning, eventName string
 
 	for _, v := range options {
 		switch v.Name {
@@ -58,16 +58,12 @@ func HandleEventCreate(s *discordgo.Session, i *discordgo.InteractionCreate, lcm
 				return
 			}
 
+			eventName = targetEvent.Name
+
 			input = queries.AutoEvent{
-				Name:         targetEvent.Name,
-				Description:  targetEvent.Description,
 				GuildID:      i.GuildID,
 				GuildEventID: targetEvent.ID,
-				Location:     targetEvent.ChannelID,
-				EntityType:   targetEvent.EntityType,
-				PrivacyLevel: targetEvent.PrivacyLevel,
 				Frequency:    input.Frequency,
-				CurrentEvent: targetEvent.ScheduledStartTime,
 			}
 		}
 	}
@@ -85,7 +81,7 @@ func HandleEventCreate(s *discordgo.Session, i *discordgo.InteractionCreate, lcm
 		log.Printf("%s: failed to create new event: %s", i.ID, err.Error())
 		InternalError(s, i, log)
 	} else {
-		log.Printf("%s: Successfully created event `%s`", i.ID, input.Name)
-		TryRespond(s, i, fmt.Sprintf("Successfully created event `%s`."+warning, input.Name), log)
+		log.Printf("%s: Successfully created event", i.ID)
+		TryRespond(s, i, fmt.Sprintf("Successfully created event `%s`."+warning, eventName), log)
 	}
 }

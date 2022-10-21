@@ -45,14 +45,6 @@ func HandleEventDelete(s *discordgo.Session, i *discordgo.InteractionCreate, lcm
 		return
 	}
 
-	var targetSeries queries.AutoEvent
-	err = tx.Do(queries.FindEvent(i.GuildID, eventID, &targetSeries))
-	if err != nil {
-		log.Printf("%s: failed to find event in database: %s", i.ID, err.Error())
-		InternalError(s, i, log)
-		return
-	}
-
 	err = tx.Do(queries.DeleteEvent(i.GuildID, eventID))
 	if err != nil {
 		log.Printf("%s: failed to delete event from database: %s", i.ID, err.Error())
@@ -68,5 +60,5 @@ func HandleEventDelete(s *discordgo.Session, i *discordgo.InteractionCreate, lcm
 	}
 
 	log.Printf("%s: finished event delete")
-	TryRespond(s, i, fmt.Sprintf("Deleted autoscheduled event series `%s`.", targetSeries.Name), log)
+	TryRespond(s, i, fmt.Sprintf("Deleted autoscheduled event series."), log)
 }

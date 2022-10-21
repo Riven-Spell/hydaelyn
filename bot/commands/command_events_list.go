@@ -22,7 +22,13 @@ func HandleEventListing(s *discordgo.Session, i *discordgo.InteractionCreate, lc
 
 	for _, v := range out {
 		toWrite += "\n"
-		toWrite += fmt.Sprintf("`%s`: %s", v.Name, v.Frequency.String())
+		event, err := s.GuildScheduledEvent(i.GuildID, v.GuildEventID, false)
+		if err != nil {
+			log.Printf("%s: failed to find event id %s: %s", i.ID, v.GuildEventID, err.Error())
+			continue
+		}
+
+		toWrite += fmt.Sprintf("`%s`: %s", event.Name, v.Frequency.String())
 	}
 
 	TryRespond(s, i, toWrite, log)

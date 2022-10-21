@@ -54,20 +54,18 @@ func (a *AutoSchedulerService) getEventUpdateHandler() func(session *discordgo.S
 			}
 
 			newEvent := &discordgo.GuildScheduledEventParams{
-				Name:               targetEvent.Name,
-				Description:        targetEvent.Description,
+				Name:               update.Name,
+				Description:        update.Description,
 				ScheduledStartTime: &nextStart,
 				ScheduledEndTime:   nextEnd,
-				EntityType:         targetEvent.EntityType,
-				PrivacyLevel:       targetEvent.PrivacyLevel, // copy the old privacy level for now.
+				EntityType:         update.EntityType,
+				PrivacyLevel:       update.PrivacyLevel, // copy the old privacy level for now.
 			}
 
 			if newEvent.EntityType == discordgo.GuildScheduledEventEntityTypeExternal {
-				newEvent.EntityMetadata = &discordgo.GuildScheduledEventEntityMetadata{
-					Location: targetEvent.Location,
-				}
+				newEvent.EntityMetadata = &update.EntityMetadata
 			} else {
-				newEvent.ChannelID = targetEvent.Location
+				newEvent.ChannelID = update.ChannelID
 			}
 
 			result, err := session.GuildScheduledEventCreate(update.GuildID, newEvent)

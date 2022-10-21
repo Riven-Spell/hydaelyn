@@ -35,5 +35,14 @@ func HandleEventDetails(s *discordgo.Session, i *discordgo.InteractionCreate, lc
 		return
 	}
 
-	TryRespond(s, i, fmt.Sprintf("Event `%s` frequency: %s. Name, Description, etc. can be edited within Discord.", targetSeries.Name, targetSeries.Frequency.String()), log)
+	event, err := s.GuildScheduledEvent(i.GuildID, eventID, false)
+	if err != nil {
+		if err != nil {
+			log.Printf("%s: could not find series `%s`: %s", i.ID, eventID, err.Error())
+			TryRespond(s, i, fmt.Sprintf("Could not find series `%s`.", eventID), log)
+			return
+		}
+	}
+
+	TryRespond(s, i, fmt.Sprintf("Event `%s` frequency: %s. Name, Description, etc. can be edited within Discord.", event.Name, targetSeries.Frequency.String()), log)
 }
