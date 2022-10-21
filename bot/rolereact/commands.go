@@ -6,7 +6,7 @@ import (
 )
 
 func (r *RoleReactService) RegisterRoleReactMessage(m *discordgo.Message, roles queries.RoleReacts) error {
-	tx, err := r.db.GetTransaction()
+	tx, err := r.db.GetTransaction(nil)
 	if err != nil {
 		return err
 	}
@@ -21,7 +21,7 @@ func (r *RoleReactService) RegisterRoleReactMessage(m *discordgo.Message, roles 
 }
 
 func (r *RoleReactService) GetRoleReactMessage(m *discordgo.Message, roles *queries.RoleReacts) error {
-	tx, err := r.db.GetTransaction()
+	tx, err := r.db.GetTransaction(nil)
 	if err != nil {
 		return err
 	}
@@ -36,7 +36,7 @@ func (r *RoleReactService) GetRoleReactMessage(m *discordgo.Message, roles *quer
 }
 
 func (r *RoleReactService) DeleteRoleReactMessage(m *discordgo.Message) error {
-	tx, err := r.db.GetTransaction()
+	tx, err := r.db.GetTransaction(nil)
 	if err != nil {
 		return err
 	}

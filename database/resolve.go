@@ -55,7 +55,7 @@ func QueryRowsResolver(processRow func() error, targets ...any) func(any) error 
 		rows := i.(*sql.Rows)
 
 		for rows.Next() {
-			err := QueryRowResolver(targets)(rows)
+			err := QueryRowResolver(targets...)(rows)
 			if err != nil {
 				return err
 			}

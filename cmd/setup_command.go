@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"github.com/Riven-Spell/hydaelyn/database"
+	"github.com/Riven-Spell/hydaelyn/database/setup"
 	"log"
 
 	"github.com/spf13/cobra"
@@ -10,6 +11,7 @@ import (
 )
 
 var setupDestructive bool
+var setupUpgrade bool
 
 var setupCmd = &cobra.Command{
 	Use:   "setup",
@@ -20,14 +22,15 @@ var setupCmd = &cobra.Command{
 		logger := lcm.Services[common.LCMServiceNameLog].GetSvc().(*log.Logger)
 		db := lcm.Services[common.LCMServiceNameSQL].GetSvc().(*database.Database)
 
-		err := db.DBSetupCorrectly()
+		err := setup.DBSetupCorrectly(db)
 
 		if err == nil && !setupDestructive {
 			logger.Println("The database already has the necessary tables and potentially information. Use --destructive to reset the database. Existing role-react messages, prefixes, etc. will be broken.")
 			return
 		}
 
-		err = db.SetupDatabase()
+		setupMode := common.Ternary(setupDestructive, setup.SetupModeDestructive, common.Ternary(setupUpgrade, setup.SetupModeUpgrade, setup.SetupModeInitial))
+		err = setup.SetupDatabase(db, setupMode)
 
 		if err != nil {
 			logger.Println("Failed to initialize database:", err)
@@ -39,7 +42,9 @@ var setupCmd = &cobra.Command{
 }
 
 func init() {
-	setupCmd.PersistentFlags().BoolVar(&setupDestructive, "destructive", false, "DESTROY any and all hydaelyn-related data in the database & remake it. Existing role-react messages, prefixes, etc. will be broken.")
+	// todo: break one more time and change to setup-mode and default to upgrade
+	setupCmd.PersistentFlags().BoolVar(&setupDestructive, "destructive", false, "DESTROY any and all hydaelyn-related data in the database & remake it. Existing role-react messages, etc. will be broken.")
+	setupCmd.PersistentFlags().BoolVar(&setupUpgrade, "upgrade", true, "Upgrades the existing database to the latest setup.")
 
 	rootCmd.AddCommand(setupCmd)
 }

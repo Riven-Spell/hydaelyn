@@ -14,13 +14,24 @@ const (
 )
 
 type TxOP struct {
-	Op       OpType
+	Op OpType
+	//language=SQL
 	Query    string
 	Args     []interface{}
 	Resolver func(i interface{}) error
 }
 
+type QueryArgBuilder interface {
+	BuildArg() interface{} // from something unusable to something usable
+}
+
 func QueryArgs(args ...interface{}) []interface{} {
+	for k, v := range args {
+		if qab, ok := v.(QueryArgBuilder); ok {
+			args[k] = qab.BuildArg()
+		}
+	}
+
 	return args
 }
 
@@ -32,7 +43,7 @@ func transact(transaction *Transaction, ops []TxOP) (err error) {
 	queryID := ""
 	logf := func(format string, args ...any) {
 		args = append([]any{queryID}, args...)
-		transaction.logf("query %s: "+format, args...)
+		transaction.LogfCalldepth(3, "query %s: "+format, args...)
 	}
 
 	// todo: execute query

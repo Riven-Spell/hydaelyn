@@ -1,0 +1,21 @@
+Events offers several subcommands:
+
+create:
+
+create clones an existing event into a series. Specify an initial event ID (autocorrect presents the soonest 25 events), and a frequency.
+
+list:
+
+list existing event series.
+
+delete:
+
+delete an existing event series. Autocorrect presents the 25 series with the soonest next event.
+
+update:
+
+update allows you to alter an existing event series' name, description, location, etc. Autocorrect presents the 25 series with the soonest next event.
+
+details:
+
+details allows you to list all details of an existing event series. Autocorrect presents the 25 series with the soonest next event.

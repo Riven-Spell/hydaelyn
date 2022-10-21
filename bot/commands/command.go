@@ -9,16 +9,20 @@ import (
 	"strings"
 )
 
+type Handler func(*discordgo.Session, *discordgo.InteractionCreate, *common.LifeCycleManager, *database.Database, *log.Logger)
+
 type Command struct {
-	Handler   func(s *discordgo.Session, i *discordgo.InteractionCreate, lcm *common.LifeCycleManager, db *database.Database, logger *log.Logger)
-	DgCommand *discordgo.ApplicationCommand
-	HelpText  string
+	Handler              Handler
+	AutoCompleteHandlers map[string]interface{} // either another similar map or a Handler
+	DgCommand            *discordgo.ApplicationCommand
+	HelpText             string
 }
 
 var GlobalCommands = map[string]Command{
 	RoleReactCommand.DgCommand.Name:  RoleReactCommand,
 	CommandChainRoles.DgCommand.Name: CommandChainRoles,
 	CommandSource.DgCommand.Name:     CommandSource,
+	CommandEvents.DgCommand.Name:     CommandEvents,
 }
 
 func RegisterGlobalCommands(s *discordgo.Session, cfg common.ConfigDiscord) error {
@@ -90,27 +94,32 @@ func RegisterGlobalCommands(s *discordgo.Session, cfg common.ConfigDiscord) erro
 	return nil
 }
 
-func GetCommandHandler(lcm *common.LifeCycleManager, database *database.Database, log *log.Logger) func(s *discordgo.Session, i *discordgo.InteractionCreate) {
+func GetCommandHandler(lcm *common.LifeCycleManager, db *database.Database, l *log.Logger) func(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	return func(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		cmdName := i.ApplicationCommandData().Name
 		command := GlobalCommands[cmdName]
 
-		log.Printf("%s: %s ran by %s\n", i.ID, cmdName, TryGetUsername(i))
+		if i.Type == discordgo.InteractionApplicationCommand {
+			l.Printf("%s: %s ran by %s\n", i.ID, cmdName, TryGetUsername(i))
 
-		err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-			Type: discordgo.InteractionResponseDeferredChannelMessageWithSource,
-		})
-		if err != nil {
-			log.Printf("%s: failed to respond: %s", i.ID, err.Error())
+			err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+				Type: discordgo.InteractionResponseDeferredChannelMessageWithSource,
+			})
+			if err != nil {
+				l.Printf("%s: failed to respond: %s", i.ID, err.Error())
+			}
+
+			if command.Handler == nil {
+				l.Printf("%s: Command %s has no handler!\n", i.ID, cmdName)
+				InternalError(s, i, l)
+				return
+			}
+
+			command.Handler(s, i, lcm, db, l)
+		} else if i.Type == discordgo.InteractionApplicationCommandAutocomplete {
+			l.Printf("%s: %s polling autocomplete for %s\n", i.ID, cmdName, TryGetUsername(i))
+			AutoCompleteHandler(s, i, lcm, db, l)
 		}
-
-		if command.Handler == nil {
-			log.Printf("%s: Command %s has no handler!\n", i.ID, cmdName)
-			InternalError(s, i, log)
-			return
-		}
-
-		command.Handler(s, i, lcm, database, log)
 	}
 }
 

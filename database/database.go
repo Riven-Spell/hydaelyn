@@ -14,8 +14,14 @@ type Database struct {
 	dbName string
 }
 
-func (db *Database) GetTransaction() (*Transaction, error) {
+func (db *Database) Name() string {
+	return db.dbName
+}
+
+func (db *Database) GetTransaction(opt *GetTransactionOptions) (*Transaction, error) {
 	txID := uuid.New().String()
+
+	setDB := opt.GetValues()
 
 	db.log.Printf("tx%s: Opening transaction", txID)
 	tx, err := db.sql.BeginTx(context.TODO(), nil)
@@ -23,17 +29,19 @@ func (db *Database) GetTransaction() (*Transaction, error) {
 		return nil, err
 	}
 
-	db.log.Printf("tx%s: Setting database", txID)
-	_, err = tx.Exec(fmt.Sprintf("USE `%s`;", db.dbName))
-	if err != nil {
-		return nil, err
+	if setDB {
+		db.log.Printf("tx%s: Setting database", txID)
+		_, err = tx.Exec(fmt.Sprintf("USE `%s`;", db.dbName))
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return &Transaction{tx: tx, owner: db, id: txID}, nil
 }
 
 func (db *Database) Tx(ops []TxOP) error {
-	tx, err := db.GetTransaction()
+	tx, err := db.GetTransaction(nil)
 
 	err = tx.Do(ops)
 	if err != nil {

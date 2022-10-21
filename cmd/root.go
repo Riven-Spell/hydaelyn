@@ -1,8 +1,10 @@
 package cmd
 
 import (
+	"github.com/Riven-Spell/hydaelyn/bot/commands/events"
 	"github.com/Riven-Spell/hydaelyn/bot/rolereact"
 	"github.com/Riven-Spell/hydaelyn/database"
+	"github.com/Riven-Spell/hydaelyn/database/setup"
 	"log"
 	"os"
 	"os/signal"
@@ -22,6 +24,7 @@ var rootCmd = &cobra.Command{
 		services := []common.LCMService{
 			bot.LCMServiceBot(),
 			rolereact.LCMServiceRoleReact,
+			events.LCMServiceAutoScheduler,
 		}
 		services = append(services, DefaultServices...)
 
@@ -32,7 +35,7 @@ var rootCmd = &cobra.Command{
 
 		defer lcm.Shutdown()
 
-		err := db.DBSetupCorrectly()
+		err := setup.DBSetupCorrectly(db)
 		if err != nil {
 			logger.Println("Shutting down. The database was not set up correctly; encountered error:", err)
 			logger.Println("Run hydaelyn setup --destructive or manually repair the database to continue.")

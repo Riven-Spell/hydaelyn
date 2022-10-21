@@ -14,3 +14,13 @@ func (j *JsonResolveTarget) Substitute() any {
 func (j *JsonResolveTarget) Resolve() error {
 	return json.Unmarshal([]byte(j.internalTarget), j.Target)
 }
+
+func (j *JsonResolveTarget) BuildArg() interface{} {
+	buf, err := json.Marshal(j.Target)
+
+	if err != nil {
+		panic(err)
+	}
+
+	return string(buf)
+}

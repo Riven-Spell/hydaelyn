@@ -38,7 +38,7 @@ func LCMServiceBot() common.LCMService {
 				log.Fatal(err)
 			}
 
-			session.Identify.Intents = discordgo.IntentsGuilds | discordgo.IntentsGuildMessages | discordgo.IntentsGuildMessageReactions
+			session.Identify.Intents = discordgo.IntentGuilds | discordgo.IntentGuildMessages | discordgo.IntentGuildMessageReactions | discordgo.IntentGuildScheduledEvents
 
 			session.AddHandler(commands.GetCommandHandler(lcm, db, log))
 
