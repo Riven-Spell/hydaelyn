@@ -33,8 +33,6 @@ func HandleEventDelete(s *discordgo.Session, i *discordgo.InteractionCreate, lcm
 				TryRespond(s, i, "Invalid `series`. Can be event ID.", log)
 				return
 			}
-
-			return
 		}
 	}
 
