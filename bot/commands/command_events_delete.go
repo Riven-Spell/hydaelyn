@@ -50,6 +50,13 @@ func HandleEventDelete(s *discordgo.Session, i *discordgo.InteractionCreate, lcm
 		return
 	}
 
+	err = tx.Commit()
+	if err != nil {
+		log.Printf("%s: failed to commit operation: %s", i.ID, err.Error())
+		InternalError(s, i, log)
+		return
+	}
+
 	if deleteFinale {
 		err := s.GuildScheduledEventDelete(i.GuildID, eventID)
 		if err != nil {
