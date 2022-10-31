@@ -25,21 +25,29 @@ func (e AutoEvent) NextEventStart(lastStartTime time.Time) time.Time {
 		return time.Date(year, month+1, 0, 0, 0, 0, 0, lastStartTime.Location())
 	}
 
+	var out = lastStartTime
+
 	switch e.Frequency {
 	case FrequencyDaily:
-		return lastStartTime.Add(time.Hour * 24)
+		out = lastStartTime.Add(time.Hour * 24)
 	case FrequencyWeekly:
-		return lastStartTime.Add(time.Hour * 24 * 7)
+		out = lastStartTime.Add(time.Hour * 24 * 7)
 	case FrequencyYearly:
 		months = 12
 		fallthrough
 	case FrequencyMonthly:
 		remainingDays := getDays(lastStartTime.Year(), lastStartTime.Month()+months+1).Day()
 		targetDay := common.Ternary(e.BaseDay > remainingDays, remainingDays, e.BaseDay)
-		return time.Date(lastStartTime.Year(), lastStartTime.Month()+months, targetDay, lastStartTime.Hour(), lastStartTime.Minute(), lastStartTime.Second(), lastStartTime.Nanosecond(), lastStartTime.Location())
+		out = time.Date(lastStartTime.Year(), lastStartTime.Month()+months, targetDay, lastStartTime.Hour(), lastStartTime.Minute(), lastStartTime.Second(), lastStartTime.Nanosecond(), lastStartTime.Location())
 	}
 
-	return lastStartTime // event should have a frequency
+	// Handle DST bullshit
+	if out.In(time.Local).Hour() != lastStartTime.In(time.Local).Hour() {
+		toAdd := time.Hour * time.Duration(lastStartTime.In(time.Local).Hour()-out.In(time.Local).Hour())
+		out = out.Add(toAdd)
+	}
+
+	return out
 }
 
 type EventFrequency uint8
