@@ -60,6 +60,7 @@ func (a *AutoSchedulerService) getEventUpdateHandler() func(session *discordgo.S
 				ScheduledEndTime:   nextEnd,
 				EntityType:         update.EntityType,
 				PrivacyLevel:       update.PrivacyLevel, // copy the old privacy level for now.
+				Image:              update.Image,
 			}
 
 			if newEvent.EntityType == discordgo.GuildScheduledEventEntityTypeExternal {
