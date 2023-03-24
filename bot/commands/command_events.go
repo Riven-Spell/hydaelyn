@@ -118,6 +118,11 @@ var CommandEvents = Command{
 					},
 				},
 			},
+			{
+				Type:        discordgo.ApplicationCommandOptionSubCommand,
+				Name:        "purge",
+				Description: "Purge the database of events that do not match",
+			},
 		},
 	},
 	HelpText: EventsHelptext,
@@ -135,6 +140,8 @@ func CommandEventsHandler(s *discordgo.Session, i *discordgo.InteractionCreate, 
 		HandleEventDelete(s, i, lcm, db, log)
 	case "update":
 		HandleEventUpdate(s, i, lcm, db, log)
+	case "purge":
+		HandleEventPurge(s, i, lcm, db, log)
 	default:
 		fmt.Println("dafuk")
 	}
